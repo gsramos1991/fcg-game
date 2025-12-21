@@ -1,0 +1,37 @@
+﻿services:
+  # ==========================================
+  # GAMES SERVICE
+  # ==========================================
+  - type: web
+    name: fcg-games-service
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://+:80
+      - key: ConnectionStrings__DefaultConnection
+        fromDatabase:
+          name: fcg-games-db
+          property: connectionString
+      - key: Elasticsearch__Uri
+        value: https://YOUR_ELASTIC_CLOUD_URL:9243
+      - key: JwtSettings__SecretKey
+        sync: false
+      - key: JwtSettings__Issuer
+        value: FCG.Auth
+      - key: JwtSettings__Audience
+        value: FCG.Client
+
+# ==========================================
+# DATABASE
+# ==========================================
+databases:
+  - name: fcg-games-db
+    databaseName: fcg_games
+    user: games_user
+    plan: free
+    region: oregon
