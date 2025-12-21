@@ -80,6 +80,7 @@
 ﻿// HTTP CLIENTS
 ﻿// ============================================
 ﻿builder.Services.AddHttpClient<IOrderApiClient, OrderApiClient>();
+builder.Services.AddHttpClient<FCG.Game.Application.Clients.IPaymentApiClient, FCG.Game.Infrastructure.Clients.PaymentApiClient>();
 ﻿
 ﻿// ============================================
 ﻿// BACKGROUND SERVICES
