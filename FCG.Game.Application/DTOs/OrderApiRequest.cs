@@ -5,6 +5,8 @@ namespace FCG.Game.Application.DTOs
 {
     public class OrderApiRequest
     {
+        [JsonPropertyName("orderId")]
+        public Guid OrderId { get; set; }
         [JsonPropertyName("userId")]
         public string UserId { get; set; } = string.Empty;
 

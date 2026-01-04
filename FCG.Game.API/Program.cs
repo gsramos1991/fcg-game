@@ -7,10 +7,9 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 ﻿using System.Text;
 ﻿using Microsoft.EntityFrameworkCore;
-﻿using FCG.Game.Application.Clients;
-﻿using FCG.Game.Infrastructure.Clients;
-﻿
-﻿var builder = WebApplication.CreateBuilder(args);
+using FCG.Game.Infrastructure.Messaging;
+
+var builder = WebApplication.CreateBuilder(args);
 ﻿
 ﻿// ============================================
 ﻿// CONFIGURAÇÃO DE SERVIÇOS
@@ -67,20 +66,23 @@
 ﻿// REPOSITORIES
 ﻿// ============================================
 ﻿builder.Services.AddScoped<IGameRepository, GameRepository>();
-﻿builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-﻿
-﻿// ============================================
-﻿// APPLICATION SERVICES
-﻿// ============================================
-﻿builder.Services.AddScoped<IGameService, GameService>();
-﻿builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IUserLibraryGameRepository, UserLibraryGameRepository>();
+
+
+// ============================================
+// APPLICATION SERVICES
+// ============================================
+builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IUserLibraryGameService, UserLibraryGameService>();
 ﻿builder.Services.AddScoped<MetricsService>();
 ﻿
 ﻿// ============================================
 ﻿// HTTP CLIENTS
 ﻿// ============================================
-﻿builder.Services.AddHttpClient<IOrderApiClient, OrderApiClient>();
-builder.Services.AddHttpClient<FCG.Game.Application.Clients.IPaymentApiClient, FCG.Game.Infrastructure.Clients.PaymentApiClient>();
+builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMqSettings"));
+builder.Services.AddSingleton<IMessagePublisher, RabbitMqMessagePublisher>();
 ﻿
 ﻿// ============================================
 ﻿// BACKGROUND SERVICES

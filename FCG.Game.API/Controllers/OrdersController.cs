@@ -10,10 +10,11 @@ namespace FCG.Game.API.Controllers;
 public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;
-
-    public OrdersController(IOrderService orderService)
+    private readonly IUserLibraryGameService _userLibraryGame;
+    public OrdersController(IOrderService orderService, IUserLibraryGameService userLibraryGame)
     {
         _orderService = orderService;
+        _userLibraryGame = userLibraryGame;
     }
 
     [HttpPost("new-order")]
@@ -23,7 +24,7 @@ public class OrdersController : ControllerBase
         {
             var userId = GetUserIdFromClaims();
             var orderId = await _orderService.CreateOrderAsync(userId, request.Items);
-
+            await _userLibraryGame.InsertGameUser(request, userId, orderId);
             return CreatedAtAction(nameof(GetOrder), new { id = orderId }, new { orderId });
         }
         catch (InvalidOperationException ex)

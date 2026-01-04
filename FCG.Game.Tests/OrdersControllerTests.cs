@@ -17,12 +17,14 @@ namespace FCG.Game.Tests
     public class OrdersControllerTests
     {
         private readonly Mock<IOrderService> _orderServiceMock; // Use the interface
+        private readonly Mock<IUserLibraryGameService> _userLibraryGameServiceMock;
         private readonly OrdersController _ordersController;
 
         public OrdersControllerTests()
         {
             _orderServiceMock = new Mock<IOrderService>(); // Mock the interface
-            _ordersController = new OrdersController(_orderServiceMock.Object);
+            _userLibraryGameServiceMock = new Mock<IUserLibraryGameService>();
+            _ordersController = new OrdersController(_orderServiceMock.Object, _userLibraryGameServiceMock.Object);
         }
 
         private void SetupUserClaims(string userId)
