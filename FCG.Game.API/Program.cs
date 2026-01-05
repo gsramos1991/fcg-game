@@ -1,13 +1,14 @@
-﻿using FCG.Game.Application.Services;
-﻿using FCG.Game.Application.Services.Interfaces;
 ﻿using FCG.Game.Application.Repositories;
-﻿using FCG.Game.Infrastructure.Repositories;
-﻿using FCG.Game.Infrastructure.Data;
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-﻿using Microsoft.IdentityModel.Tokens;
-﻿using System.Text;
-﻿using Microsoft.EntityFrameworkCore;
+using FCG.Game.Application.Services;
+using FCG.Game.Application.Services.Interfaces;
+using FCG.Game.Infrastructure.Data;
 using FCG.Game.Infrastructure.Messaging;
+using FCG.Game.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 ﻿
@@ -77,24 +78,35 @@ builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IUserLibraryGameService, UserLibraryGameService>();
 ﻿builder.Services.AddScoped<MetricsService>();
-﻿
-﻿// ============================================
-﻿// HTTP CLIENTS
-﻿// ============================================
-builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMqSettings"));
-builder.Services.AddSingleton<IMessagePublisher, RabbitMqMessagePublisher>();
-﻿
-﻿// ============================================
-﻿// BACKGROUND SERVICES
-﻿// ============================================
-﻿// Background Service desabilitado temporariamente (API do EventStore mudou)
-﻿// Para habilitar no futuro, descomente a linha abaixo:
-﻿// builder.Services.AddHostedService<EventStoreSubscriptionService>();
-﻿
-﻿// ============================================
-﻿// JWT AUTHENTICATION
-﻿// ============================================
-﻿var jwtKey = builder.Configuration["Jwt:Key"]
+builder.Services.AddScoped<IMessagePublisher, AzureServiceBusSender>();
+// ============================================
+// HTTP CLIENTS
+// ============================================
+//builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMqSettings"));
+//builder.Services.AddSingleton<IMessagePublisher, RabbitMqMessagePublisher>();
+//var serviceBusConfig = builder.Configuration
+//    .GetSection("AsbConfig")
+//    .Get<AzureServiceBusConfig>();
+builder.Services.Configure<AzureServiceBusConfig>(
+    builder.Configuration.GetSection("ConfigFila")
+);
+
+
+
+
+
+
+// ============================================
+// BACKGROUND SERVICES
+// ============================================
+// Background Service desabilitado temporariamente (API do EventStore mudou)
+// Para habilitar no futuro, descomente a linha abaixo:
+// builder.Services.AddHostedService<EventStoreSubscriptionService>();
+
+// ============================================
+// JWT AUTHENTICATION
+// ============================================
+var jwtKey = builder.Configuration["Jwt:Key"]
 ﻿    ?? throw new InvalidOperationException("JWT Key não configurada");
 ﻿
 ﻿builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

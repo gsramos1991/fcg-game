@@ -64,7 +64,7 @@ namespace FCG.Game.Application.Services
             };
 
             var jsonPayload = JsonSerializer.Serialize(orderApiRequest);
-            _messagePublisher.Publish(jsonPayload, "payment-requests");
+            await _messagePublisher.Publish(jsonPayload, "payment-requests");
 
             var order =  MontarPedido(Guid.Empty, orderApiRequest);
             await _orderRepository.AddOrderAsync(order);
