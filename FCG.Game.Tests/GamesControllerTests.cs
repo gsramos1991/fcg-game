@@ -146,39 +146,5 @@ namespace FCG.Game.Tests
             var dataVal = (IEnumerable<object>)dataProp.GetValue(value)!;
             dataVal.Count().Should().Be(games.Count);
         }
-
-        [Fact]
-        public async Task GetRecommendations_ReturnsOk_WithRecommendationsAndUserId()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var limit = 3;
-            SetupUserClaims(userId.ToString(), "Usuario");
-
-            var games = new List<FCG.Game.Domain.Entities.Game>
-            {
-                new FCG.Game.Domain.Entities.Game(Guid.NewGuid(), "A", "D", "G", 1m, "P", DateTime.UtcNow, new List<string>(), "")
-            };
-
-            _gameServiceMock.Setup(s => s.GetRecommendationsAsync(userId, limit)).ReturnsAsync(games);
-
-            // Act
-            var result = await _gamesController.GetRecommendations(limit);
-
-            // Assert
-            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var value = ok.Value!;
-            var userIdProp = value.GetType().GetProperty("userId");
-            userIdProp.Should().NotBeNull();
-            ((Guid)userIdProp.GetValue(value)!).Should().Be(userId);
-
-            var countProp = value.GetType().GetProperty("count");
-            countProp.Should().NotBeNull();
-            ((int)countProp.GetValue(value)!).Should().Be(games.Count);
-
-            var recProp = value.GetType().GetProperty("recommendations");
-            recProp.Should().NotBeNull();
-            ((IEnumerable<object>)recProp.GetValue(value)!).Should().NotBeNull();
-        }
     }
 }

@@ -17,6 +17,7 @@ namespace FCG.Game.Tests
         private readonly Mock<IMessagePublisher> _messagePublisherMock;
         private readonly Mock<IGameRepository> _gameRepositoryMock;
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
+        private readonly Mock<IUserLibraryGameService> _userLibraryGameServiceMock;
         private readonly IOrderService _orderService;
 
         public OrderServiceTests()
@@ -24,11 +25,13 @@ namespace FCG.Game.Tests
             _messagePublisherMock = new Mock<IMessagePublisher>();
             _gameRepositoryMock = new Mock<IGameRepository>();
             _orderRepositoryMock = new Mock<IOrderRepository>();
+            _userLibraryGameServiceMock = new Mock<IUserLibraryGameService>();
 
             _orderService = new OrderService(
                 _orderRepositoryMock.Object,
                 _gameRepositoryMock.Object,
-                _messagePublisherMock.Object);
+                _messagePublisherMock.Object,
+                _userLibraryGameServiceMock.Object);
         }
 
         [Fact]
@@ -44,6 +47,8 @@ namespace FCG.Game.Tests
             {
                 new(gameId, 2)
             };
+
+            var createOrderRequest = new CreateOrderRequest(orderItems);
 
             var game = new Domain.Entities.Game(
                 gameId,
@@ -64,7 +69,7 @@ namespace FCG.Game.Tests
                 .Callback<string, string>((msg, queue) => publishedMessage = msg);
 
             // Act
-            var result = await _orderService.CreateOrderAsync(userId, orderItems);
+            var result = await _orderService.CreateOrderAsync(userId, orderItems, createOrderRequest);
 
             // Assert
             result.Should().NotBeEmpty();
@@ -73,6 +78,7 @@ namespace FCG.Game.Tests
             
             publishedMessage.Should().NotBeNull();
             var publishedOrder = JsonSerializer.Deserialize<OrderApiRequest>(publishedMessage);
+            publishedOrder.Should().NotBeNull();
             publishedOrder.UserId.Should().Be(userId.ToString());
             publishedOrder.Items.Should().HaveCount(1);
             publishedOrder.Items[0].JogoId.Should().Be(gameId.ToString());

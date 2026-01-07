@@ -8,7 +8,6 @@ using FCG.Game.Infrastructure.Messaging;
 using FCG.Game.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -84,11 +83,6 @@ builder.Services.AddScoped<IMessagePublisher, AzureServiceBusSender>();
 // ============================================
 // HTTP CLIENTS
 // ============================================
-//builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMqSettings"));
-//builder.Services.AddSingleton<IMessagePublisher, RabbitMqMessagePublisher>();
-//var serviceBusConfig = builder.Configuration
-//    .GetSection("AsbConfig")
-//    .Get<AzureServiceBusConfig>();
 builder.Services.AddHttpClient<IPaymentApiClient, PaymentApiClient>(client =>
 {
     // Você pode configurar a URL base aqui, se quiser
@@ -97,18 +91,6 @@ builder.Services.AddHttpClient<IPaymentApiClient, PaymentApiClient>(client =>
 builder.Services.Configure<AzureServiceBusConfig>(
     builder.Configuration.GetSection("ConfigFila")
 );
-
-
-
-
-
-
-// ============================================
-// BACKGROUND SERVICES
-// ============================================
-// Background Service desabilitado temporariamente (API do EventStore mudou)
-// Para habilitar no futuro, descomente a linha abaixo:
-// builder.Services.AddHostedService<EventStoreSubscriptionService>();
 
 // ============================================
 // JWT AUTHENTICATION

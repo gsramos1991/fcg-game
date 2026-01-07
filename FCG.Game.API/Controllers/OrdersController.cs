@@ -26,7 +26,7 @@ public class OrdersController : ControllerBase
             var userId = GetUserIdFromClaims();
             var orderId = await _orderService.CreateOrderAsync(userId, request.Items, request);
           
-            return Ok(orderId);
+            return CreatedAtAction(null, new { id = orderId }, orderId);
         }
         catch (InvalidOperationException ex)
         {

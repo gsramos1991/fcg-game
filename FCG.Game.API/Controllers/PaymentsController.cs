@@ -4,6 +4,7 @@ using FCG.Game.Application.Clients;
 using FCG.Game.Application.DTOs;
 using FCG.Game.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FCG.Game.API.Controllers
@@ -12,7 +13,7 @@ namespace FCG.Game.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "Usuario,Administrador")]
-    public class PaymentsController : ApiBaseController
+    public class PaymentsController : ControllerBase
     {
         private readonly IPaymentApiClient _paymentApiClient;
         private readonly IOrderService _orders;
