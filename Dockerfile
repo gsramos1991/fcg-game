@@ -5,8 +5,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine AS base
 WORKDIR /app
 EXPOSE 80
 
-# Instala dependências necessárias no Alpine para .NET (Globalização e Timezone)
-# O curl é necessário para o seu HEALTHCHECK funcionar
+# Instala dependencias necessarias no Alpine para .NET (Globalizacao e Timezone)
 RUN apk add --no-cache \
     icu-data-full \
     icu-libs \
@@ -37,7 +36,7 @@ RUN dotnet restore "FCG.Game.API/FCG.Game.API.csproj"
 # Copia o restante do código fonte
 COPY . .
 
-# Build da aplicação
+# Build da aplicacao
 WORKDIR "/src/FCG.Game.API"
 RUN dotnet build "FCG.Game.API.csproj" -c Release -o /app/build
 

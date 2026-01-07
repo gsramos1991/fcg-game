@@ -1,34 +1,52 @@
 ﻿# FCG Game Microservice
 
-Microsserviço de Jogos usando .NET 8, Elasticsearch e EventStore.
+Microsserviço de Jogos usando .NET 8.
 
 ## Tecnologias
 
 - .NET 8
-- Elasticsearch
-- EventStore
+- Azure Service Bus
+- Kubernetes
 - Docker
 
 ## Como executar
 
-1. Iniciar containers:
-```bash
-docker-compose up -d
+1. Alterar a connectionString do banco de dados (SQL Server)
+```Json
+  "ConfigFila": {
+    "ConnectionString": "Server=localhost,1433;Database=FCG_Jogos;User Id=[username];Password=[Password];TrustServerCertificate=True;"
+  }
 ```
+2. Configurar a ConnectionString do Azure Service Bus 
+```Json
+  "ConfigFila": {
+    "ConnectionString": ""
+  }
+```
+3. Configurar a rota da api de pagamentos
+```Json
+  "OrderApi": {
+    "Url": "http://localhost:5012/"
+  }
+```
+---
+## Executar o projeto
+1. Rodar a migrations com o comando
 
+```
+dotnet ef migrations add AddOrderId --project .\FCG.Game.Infrastructure --startup-project .\FCG.Game.API
+```
+```
+dotnet ef database update
+```
 2. Executar a aplicação:
 ```bash
 dotnet run --project FCG.Game.API
 ```
 
-3. Acessar Swagger:
+4. Acessar Swagger:
 ```
 http://localhost:5002/swagger
-```
-
-4. Acessar Kibana:
-```
-http://localhost:5601
 ```
 
 ## Estrutura
