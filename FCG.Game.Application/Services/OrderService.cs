@@ -11,22 +11,26 @@ namespace FCG.Game.Application.Services
         private readonly IOrderRepository _orderRepository;
         private readonly IGameRepository _gameRepository;
         private readonly IMessagePublisher _messagePublisher;
+        private readonly IUserLibraryGameService _library;
 
         public OrderService(
             IOrderRepository orderRepository,
             IGameRepository gameRepository,
-            IMessagePublisher messagePublisher)
+            IMessagePublisher messagePublisher,
+            IUserLibraryGameService library)
         {
             _orderRepository = orderRepository;
             _gameRepository = gameRepository;
             _messagePublisher = messagePublisher;
+            _library = library;
         }
 
-        public async Task<Guid> CreateOrderAsync(Guid userId, List<OrderItemRequest> items)
+        public async Task<Guid> CreateOrderAsync(Guid userId, List<OrderItemRequest> items, CreateOrderRequest request)
         {
             var gameIds = items.Select(i => i.GameId).ToList();
             var games = new List<Domain.Entities.Game>();
             var userLibrary = new List<Domain.Entities.UserLibraryGame>();
+            var orderId = Guid.NewGuid();
             foreach (var gameId in gameIds)
             {
                 var userLibraryGame = new Domain.Entities.UserLibraryGame();
@@ -45,9 +49,13 @@ namespace FCG.Game.Application.Services
                 userLibrary.Add(userLibraryGame);
             }
 
+
+            await _library.InsertGameUser(request, userId, orderId);
+
+
             var orderApiRequest = new OrderApiRequest
             {
-                OrderId = Guid.NewGuid(),
+                OrderId = orderId,
                 UserId = userId.ToString(),
                 Currency = "BRL",
                 Items = items.Select(item =>
@@ -78,21 +86,28 @@ namespace FCG.Game.Application.Services
             if (order == null || order.UserId != userId)
                 return false;
 
-            if (order.Status != OrderStatus.Pending)
+            if (order.Status != OrderStatus.PENDING)
                 throw new InvalidOperationException("Order has already been processed.");
 
             order.Complete();
             await _orderRepository.UpdateOrderAsync(order);
-            
-            // The logic to increment game sales was removed as it was tied to elastic.
-            // This would need to be re-implemented differently if still required.
-
+          
             return true;
         }
 
-        public async Task<Order?> GetOrderByIdAsync(Guid orderId)
+        public async Task<Order?> GetOrderByIdAsync(Guid orderId, PaymentResponseDto resp)
         {
-            return await _orderRepository.GetOrderByIdAsync(orderId);
+            var order = await _orderRepository.GetOrderByIdAsync(orderId);
+
+            if (Enum.TryParse(resp.StatusPayment, out OrderStatus meuStatus))
+            {
+                order.Status = meuStatus;
+                order.CompletedAt = DateTime.UtcNow;
+
+                await _orderRepository.UpdateOrderAsync(order);
+            }
+
+            return order;
         }
 
         public async Task<List<Order>> GetUserOrdersAsync(Guid userId, int page = 1, int pageSize = 20)
@@ -111,7 +126,7 @@ namespace FCG.Game.Application.Services
             {
                 
                 Id = order.OrderId,
-                Status = OrderStatus.Pending,
+                Status = OrderStatus.PENDING,
                 PaymentId = PaymentId,
                 UserId = Guid.Parse(order.UserId),
                 CompletedAt = DateTime.UtcNow,

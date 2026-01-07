@@ -31,5 +31,37 @@ namespace FCG.Game.Application.Services
                 await _userLibraryGameRepository.addGameOnLibrary(userLibraryGame);
             }
         }
+
+        public async Task UpdateGameUser(Order order, List<UserLibraryGame> library)
+        {
+            foreach (var item in library)
+            {   
+                if (!InvalidStatus(order))
+                {
+                    continue;
+                }
+
+                item.isActive = true;
+                await _userLibraryGameRepository.updateGameOnLibrary(item);
+
+            }
+        }
+
+        private static bool InvalidStatus(Order order)
+        {
+            var validStatuses = new[] {
+                OrderStatus.PENDING,
+                OrderStatus.ERROR,
+                OrderStatus.FAIL,
+                OrderStatus.CANCELLED
+            };
+
+            return !validStatuses.Contains(order.Status);
+        }
+
+        public async Task<List<UserLibraryGame>> FindGameUser(Guid orderId , Guid userId)
+        {
+            return await _userLibraryGameRepository.findGameOnLibrary(orderId, userId);
+        }
     }
 }

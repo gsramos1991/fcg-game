@@ -10,5 +10,7 @@ namespace FCG.Game.Application.Repositories
     public interface IUserLibraryGameRepository
     {
         Task addGameOnLibrary(UserLibraryGame game);
+        Task updateGameOnLibrary(UserLibraryGame libraryGuid);
+        Task<List<UserLibraryGame>> findGameOnLibrary(Guid orderId, Guid userId);
     }
 }

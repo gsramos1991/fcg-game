@@ -16,7 +16,7 @@ public class GamesController : ApiBaseController
     }
 
     [HttpPost]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> CreateGame([FromBody] CreateGameDto dto)
     {
         var gameId = await _gameService.CreateGameAsync(dto);

@@ -8,9 +8,9 @@ namespace FCG.Game.Application.Services.Interfaces
 {
     public interface IOrderService
     {
-        Task<Guid> CreateOrderAsync(Guid userId, List<OrderItemRequest> items);
+        Task<Guid> CreateOrderAsync(Guid userId, List<OrderItemRequest> items, CreateOrderRequest request);
         Task<bool> CompleteOrderAsync(Guid orderId, Guid userId);
-        Task<Order?> GetOrderByIdAsync(Guid orderId);
+        Task<Order?> GetOrderByIdAsync(Guid orderId, PaymentResponseDto resp);
         Task<List<Order>> GetUserOrdersAsync(Guid userId, int page = 1, int pageSize = 20);
     }
 }

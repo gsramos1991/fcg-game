@@ -1,6 +1,8 @@
-﻿using FCG.Game.Application.Repositories;
+﻿using FCG.Game.Application.Clients;
+using FCG.Game.Application.Repositories;
 using FCG.Game.Application.Services;
 using FCG.Game.Application.Services.Interfaces;
+using FCG.Game.Infrastructure.Clients;
 using FCG.Game.Infrastructure.Data;
 using FCG.Game.Infrastructure.Messaging;
 using FCG.Game.Infrastructure.Repositories;
@@ -87,6 +89,11 @@ builder.Services.AddScoped<IMessagePublisher, AzureServiceBusSender>();
 //var serviceBusConfig = builder.Configuration
 //    .GetSection("AsbConfig")
 //    .Get<AzureServiceBusConfig>();
+builder.Services.AddHttpClient<IPaymentApiClient, PaymentApiClient>(client =>
+{
+    // Você pode configurar a URL base aqui, se quiser
+    client.BaseAddress = new Uri(builder.Configuration.GetSection("PaymentApi:BaseUrl").Value!);
+});
 builder.Services.Configure<AzureServiceBusConfig>(
     builder.Configuration.GetSection("ConfigFila")
 );
