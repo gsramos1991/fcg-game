@@ -71,11 +71,14 @@ namespace FCG.Game.Application.Services
                 }).ToList()
             };
 
+
+            var order = MontarPedido(Guid.Empty, orderApiRequest);
+            await _orderRepository.AddOrderAsync(order);
+
             var jsonPayload = JsonSerializer.Serialize(orderApiRequest);
             await _messagePublisher.Publish(jsonPayload, "payment-requests");
 
-            var order =  MontarPedido(Guid.Empty, orderApiRequest);
-            await _orderRepository.AddOrderAsync(order);
+            
             return order.Id;
         }
 
