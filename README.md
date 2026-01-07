@@ -2,52 +2,62 @@
 
 Microsserviço de Jogos usando .NET 8.
 
-## Tecnologias
+## 📦 Requisitos
 
 - .NET 8
 - Azure Service Bus
 - Kubernetes
 - Docker
+- SQL Server
+
+## 🐳 Docker
+- Build da imagem da API
+  - `docker build -t fcg-games:latest .`
+- Subir com docker-compose (SQL Server)
+  - `docker compose up -d`
 
 ## Como executar
 
 1. Alterar a connectionString do banco de dados (SQL Server)
-```Json
-  "ConfigFila": {
-    "ConnectionString": "Server=localhost,1433;Database=FCG_Jogos;User Id=[username];Password=[Password];TrustServerCertificate=True;"
-  }
-```
+- ```Json
+    "ConnectionStrings": {
+      "DefaultConnection": "Server=localhost,1433;Database=FCG_Jogos;User Id=[username];Password=[Password];TrustServerCertificate=True;"
+    }
+  ```
 2. Configurar a ConnectionString do Azure Service Bus 
-```Json
+- ```Json
   "ConfigFila": {
     "ConnectionString": ""
   }
-```
+  ```
 3. Configurar a rota da api de pagamentos
-```Json
+- ```Json
   "OrderApi": {
-    "Url": "http://localhost:5012/"
+    "Url": ""
   }
-```
+  ```
 ---
-## Executar o projeto
-1. Rodar a migrations com o comando
+## 🧱 Migrations (EF Core)
 
-```
-dotnet ef migrations add AddOrderId --project .\FCG.Game.Infrastructure --startup-project .\FCG.Game.API
-```
-```
-dotnet ef database update
-```
-2. Executar a aplicação:
-```bash
-dotnet run --project FCG.Game.API
-```
+**Gerar uma nova migration:**
+- Na raiz do repositório:
+  ```bash
+  dotnet ef migrations add <NomeDaMigration> -p .\FCG.Game.Infrastructure -s .\FCG.Game.API -c GameDbContext
+  ```
 
-4. Acessar Swagger:
-```
-http://localhost:5002/swagger
-```
+**Atualizar o banco de dados:**
+- ```bash
+  dotnet ef database update -p .\FCG.Game.Infrastructure -s .\FCG.Game.API -c GameDbContext
+  ```
+
+**Executar a aplicação**
+- ```bash
+    dotnet run --project FCG.Game.API
+  ```
+**Acessar Swagger**
+- ```
+    http://localhost:5002/swagger
+  ```
 
 ## Estrutura
 
