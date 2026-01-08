@@ -86,3 +86,10 @@ Microsserviço de Jogos usando .NET 8.
 
 - `GET /api/Payments/consultarPagamento`: Consulta um pagamento
 - `POST /api/Payments/cancelar`: Cancela um pagamento
+
+## 👥 Idealizadores do Projeto (Discord)
+- 👨‍💻 Clovis Alceu Cassaro (`cloves_93258`)
+- 👨‍💻 Gabriel Santos Ramos (`_gsramos`)
+- 👨‍💻 Júlio César de Carvalho (`cesarsoft`)
+- 👨‍💻 Marco Antonio Araujo (`_marcoaz`)
+- 👩‍💻 Yasmim Muniz Da Silva Caraça (`yasmimcaraca`)
