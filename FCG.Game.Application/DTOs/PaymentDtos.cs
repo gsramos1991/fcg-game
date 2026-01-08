@@ -12,6 +12,7 @@ namespace FCG.Game.Application.DTOs
 
     public class PaymentResponseDto
     {
+        public Guid orderId { get; set; } = Guid.Empty;
         public Guid PaymentId { get; set; }
         public string? StatusPayment { get; set; }
         public bool Success { get; set; }

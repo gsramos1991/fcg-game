@@ -2,7 +2,9 @@ using System;
 using System.Threading.Tasks;
 using FCG.Game.Application.Clients;
 using FCG.Game.Application.DTOs;
+using FCG.Game.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FCG.Game.API.Controllers
@@ -10,21 +12,35 @@ namespace FCG.Game.API.Controllers
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class PaymentsController : ApiBaseController
+    [Authorize(Roles = "Usuario,Administrador")]
+    public class PaymentsController : ControllerBase
     {
         private readonly IPaymentApiClient _paymentApiClient;
+        private readonly IOrderService _orders;
+        private readonly IUserLibraryGameService _library;
 
-        public PaymentsController(IPaymentApiClient paymentApiClient)
+        public PaymentsController(IPaymentApiClient paymentApiClient, IOrderService order, IUserLibraryGameService library)
         {
             _paymentApiClient = paymentApiClient;
+            _orders = order;
+            _library = library;
         }
 
-        [HttpGet("consultar/{paymentId}/{userId}")]
+        [HttpGet("consultarPagamento")]
         public async Task<IActionResult> ConsultarPagamento(Guid paymentId, Guid userId)
         {
             var resp = await _paymentApiClient.ConsultPaymentAsync(paymentId, userId);
             if (resp == null)
                 return NotFound();
+
+            var order = await _orders.GetOrderByIdAsync(resp.orderId, resp);
+            var jogos = await _library.FindGameUser(resp.orderId, userId);
+            await _library.UpdateGameUser(order, jogos);
+
+            if(jogos == null)
+                return NotFound();
+
+
 
             return Ok(resp);
         }

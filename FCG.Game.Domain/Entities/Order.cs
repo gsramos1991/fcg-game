@@ -12,24 +12,24 @@ public class Order
 
     public void Complete()
     {
-        if (Status != OrderStatus.Pending)
+        if (Status != OrderStatus.PENDING)
             throw new InvalidOperationException("Pedido j� foi processado");
 
-        Status = OrderStatus.Completed;
+        Status = OrderStatus.SUCCESS;
         CompletedAt = DateTime.UtcNow;
     }
 
     public void Cancel()
     {
-        if (Status == OrderStatus.Completed)
+        if (Status == OrderStatus.SUCCESS)
             throw new InvalidOperationException("N�o � poss�vel cancelar pedido completado");
 
-        Status = OrderStatus.Cancelled;
+        Status = OrderStatus.CANCELLED;
     }
 
     public void Fail(string reason)
     {
-        Status = OrderStatus.Failed;
+        Status = OrderStatus.FAIL;
     }
 }
 
@@ -42,10 +42,21 @@ public class OrderItem
     public int Quantity { get; set; }
 }
 
+//public enum OrderStatus
+//{
+//    Pending = 0,
+//    Completed = 1,
+//    CANCELLED = 2,
+//    Failed = 3
+//}
+
 public enum OrderStatus
 {
-    Pending = 0,
-    Completed = 1,
-    Cancelled = 2,
-    Failed = 3
+    PENDING = 1,
+    SUCCESS = 2,
+    CANCELLED = 3,
+    REJECTED = 4,
+
+    ERROR = -1,
+    FAIL = -2
 }

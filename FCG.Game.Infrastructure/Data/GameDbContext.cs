@@ -11,6 +11,7 @@ namespace FCG.Game.Infrastructure.Data
 
         public DbSet<FCG.Game.Domain.Entities.Game> Games { get; set; }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<UserLibraryGame> UserLibraryGames { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +24,11 @@ namespace FCG.Game.Infrastructure.Data
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Description).HasMaxLength(1000);
                 entity.Property(e => e.Genre).HasMaxLength(100);
+                entity.Property(e => e.Tags)
+                    .HasMaxLength(1000)
+                    .HasConversion(
+                        v => string.Join(',', v),
+                        v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList());
                 entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
             });
 
@@ -45,6 +51,16 @@ namespace FCG.Game.Infrastructure.Data
                 entity.Property(e => e.GameTitle).IsRequired();
                 entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.Quantity).IsRequired();
+            });
+
+            modelBuilder.Entity<UserLibraryGame>(entity =>
+            {
+                entity.HasKey(e => e.idLibraryGame);
+                entity.Property(e => e.orderId).IsRequired();
+                entity.Property(e => e.userId).IsRequired();
+                entity.Property(e => e.idGame).IsRequired();
+                entity.Property(e => e.isActive).IsRequired().HasDefaultValue(false);
+                entity.Property(e => e.createdAt).IsRequired().HasDefaultValue(DateTime.UtcNow);
             });
         }
     }

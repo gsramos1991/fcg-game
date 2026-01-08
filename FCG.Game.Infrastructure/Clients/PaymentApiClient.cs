@@ -1,12 +1,13 @@
-using System;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
 using FCG.Game.Application.Clients;
 using FCG.Game.Application.DTOs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace FCG.Game.Infrastructure.Clients
 {
@@ -25,48 +26,65 @@ namespace FCG.Game.Infrastructure.Clients
         {
             _http = http;
             _logger = logger;
-            _baseUrl = configuration["PaymentApi:BaseUrl"] ?? string.Empty;
         }
 
         public async Task<PaymentResponseDto?> ConsultPaymentAsync(Guid paymentId, Guid userId)
         {
-            var url = string.IsNullOrEmpty(_baseUrl)
-                ? $"api/Payment/ConsultarPagamento/{paymentId}/{userId}"
-                : new Uri(new Uri(_baseUrl.TrimEnd('/')), $"api/Payment/ConsultarPagamento/{paymentId}/{userId}").ToString();
+            // 1. Construção limpa da URL
+            var relativePath = $"api/Payment/ConsultarPagamento/{paymentId}/{userId}";
 
-            _logger.LogDebug("ConsultPaymentAsync GET {Url}", url);
+            _logger.LogDebug("ConsultPaymentAsync GET {RelativePath} (Base: {BaseUrl})", relativePath, _http.BaseAddress);
 
-            var res = await _http.GetAsync(url);
-            if (!res.IsSuccessStatusCode)
+            try
             {
-                _logger.LogWarning("ConsultPaymentAsync returned {StatusCode}", res.StatusCode);
+                // 2. Uso do GetFromJsonAsync: Ele já faz o Get, verifica o StatusCode e desserializa
+                // Se a base URL estiver configurada no HttpClient (via AddHttpClient), basta passar o path relativo.
+                var response = await _http.GetFromJsonAsync<PaymentResponseDto>(relativePath, _jsonOptions);
+
+                return response;
+            }
+            catch (HttpRequestException ex)
+            {
+                // Loga falhas de conexão ou status de erro (4xx, 5xx)
+                _logger.LogWarning(ex, "Erro ao consultar pagamento {PaymentId}. Status: {StatusCode}", paymentId, ex.StatusCode);
                 return null;
             }
-
-            var json = await res.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<PaymentResponseDto>(json, _jsonOptions);
+            catch (JsonException ex)
+            {
+                // Loga erro se o JSON retornado for inválido
+                _logger.LogError(ex, "Erro ao desserializar resposta de pagamento para {PaymentId}", paymentId);
+                return null;
+            }
         }
 
         public async Task<PaymentResponseDto?> CancelPaymentAsync(PaymentRequestDto request)
         {
-            var url = string.IsNullOrEmpty(_baseUrl)
-                ? "api/Payment/CancelarPagamento"
-                : new Uri(new Uri(_baseUrl.TrimEnd('/')), "api/Payment/CancelarPagamento").ToString();
+            const string relativePath = "api/Payment/CancelarPagamento";
 
-            var payload = JsonSerializer.Serialize(request, _jsonOptions);
-            var content = new StringContent(payload, Encoding.UTF8, "application/json");
+            _logger.LogDebug("CancelPaymentAsync POST {RelativePath} para o ID {PaymentId}",
+                relativePath, request.PaymentId); // Ajuste 'PaymentId' conforme seu DTO
 
-            _logger.LogDebug("CancelPaymentAsync POST {Url} payload={Payload}", url, payload);
-
-            var res = await _http.PostAsync(url, content);
-            if (!res.IsSuccessStatusCode)
+            try
             {
-                _logger.LogWarning("CancelPaymentAsync returned {StatusCode}", res.StatusCode);
+                // Envia o objeto 'request' como JSON e aguarda a resposta
+                var response = await _http.PostAsJsonAsync(relativePath, request, _jsonOptions);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning("CancelPaymentAsync falhou. Status: {StatusCode}. Erro: {Error}",
+                        response.StatusCode, errorContent);
+                    return null;
+                }
+
+                // Lê e desserializa o retorno
+                return await response.Content.ReadFromJsonAsync<PaymentResponseDto>(_jsonOptions);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro inesperado ao cancelar pagamento");
                 return null;
             }
-
-            var json = await res.Content.ReadAsStringAsync();
-            return JsonSerializer.Deserialize<PaymentResponseDto>(json, _jsonOptions);
         }
     }
 }

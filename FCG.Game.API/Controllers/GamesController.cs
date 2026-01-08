@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FCG.Game.API.Controllers;
 
 [Authorize]
-public class GamesController : ApiBaseController
+public class GamesController : ControllerBase
 {
     private readonly IGameService _gameService;
 
@@ -16,7 +16,7 @@ public class GamesController : ApiBaseController
     }
 
     [HttpPost]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "Administrador")]
     public async Task<IActionResult> CreateGame([FromBody] CreateGameDto dto)
     {
         var gameId = await _gameService.CreateGameAsync(dto);
@@ -57,20 +57,6 @@ public class GamesController : ApiBaseController
     {
         var games = await _gameService.GetGamesByGenreAsync(genre, limit);
         return Ok(games.Select(GameDto.FromGame));
-    }
-
-    [HttpGet("recommendations")]
-    public async Task<IActionResult> GetRecommendations([FromQuery] int limit = 10)
-    {
-        var userId = GetUserId();
-        var recommendations = await _gameService.GetRecommendationsAsync(userId, limit);
-
-        return Ok(new
-        {
-            userId,
-            recommendations = recommendations.Select(GameDto.FromGame),
-            count = recommendations.Count
-        });
     }
 
     [HttpGet("popular")]

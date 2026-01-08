@@ -1,16 +1,17 @@
-﻿using FCG.Game.Application.Services;
-﻿using FCG.Game.Application.Services.Interfaces;
-﻿using FCG.Game.Application.Repositories;
-﻿using FCG.Game.Infrastructure.Repositories;
-﻿using FCG.Game.Infrastructure.Data;
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-﻿using Microsoft.IdentityModel.Tokens;
-﻿using System.Text;
-﻿using Microsoft.EntityFrameworkCore;
 ﻿using FCG.Game.Application.Clients;
-﻿using FCG.Game.Infrastructure.Clients;
-﻿
-﻿var builder = WebApplication.CreateBuilder(args);
+using FCG.Game.Application.Repositories;
+using FCG.Game.Application.Services;
+using FCG.Game.Application.Services.Interfaces;
+using FCG.Game.Infrastructure.Clients;
+using FCG.Game.Infrastructure.Data;
+using FCG.Game.Infrastructure.Messaging;
+using FCG.Game.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+var builder = WebApplication.CreateBuilder(args);
 ﻿
 ﻿// ============================================
 ﻿// CONFIGURAÇÃO DE SERVIÇOS
@@ -67,32 +68,34 @@
 ﻿// REPOSITORIES
 ﻿// ============================================
 ﻿builder.Services.AddScoped<IGameRepository, GameRepository>();
-﻿builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-﻿
-﻿// ============================================
-﻿// APPLICATION SERVICES
-﻿// ============================================
-﻿builder.Services.AddScoped<IGameService, GameService>();
-﻿builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IUserLibraryGameRepository, UserLibraryGameRepository>();
+
+
+// ============================================
+// APPLICATION SERVICES
+// ============================================
+builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IUserLibraryGameService, UserLibraryGameService>();
 ﻿builder.Services.AddScoped<MetricsService>();
-﻿
-﻿// ============================================
-﻿// HTTP CLIENTS
-﻿// ============================================
-﻿builder.Services.AddHttpClient<IOrderApiClient, OrderApiClient>();
-builder.Services.AddHttpClient<FCG.Game.Application.Clients.IPaymentApiClient, FCG.Game.Infrastructure.Clients.PaymentApiClient>();
-﻿
-﻿// ============================================
-﻿// BACKGROUND SERVICES
-﻿// ============================================
-﻿// Background Service desabilitado temporariamente (API do EventStore mudou)
-﻿// Para habilitar no futuro, descomente a linha abaixo:
-﻿// builder.Services.AddHostedService<EventStoreSubscriptionService>();
-﻿
-﻿// ============================================
-﻿// JWT AUTHENTICATION
-﻿// ============================================
-﻿var jwtKey = builder.Configuration["Jwt:Key"]
+builder.Services.AddScoped<IMessagePublisher, AzureServiceBusSender>();
+// ============================================
+// HTTP CLIENTS
+// ============================================
+builder.Services.AddHttpClient<IPaymentApiClient, PaymentApiClient>(client =>
+{
+    // Você pode configurar a URL base aqui, se quiser
+    client.BaseAddress = new Uri(builder.Configuration.GetSection("PaymentApi:BaseUrl").Value!);
+});
+builder.Services.Configure<AzureServiceBusConfig>(
+    builder.Configuration.GetSection("ConfigFila")
+);
+
+// ============================================
+// JWT AUTHENTICATION
+// ============================================
+var jwtKey = builder.Configuration["Jwt:Key"]
 ﻿    ?? throw new InvalidOperationException("JWT Key não configurada");
 ﻿
 ﻿builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

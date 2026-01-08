@@ -1,19 +1,21 @@
 using FCG.Game.Application.DTOs;
 using FCG.Game.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace FCG.Game.API.Controllers;
 
-[Authorize(Roles = "Usuario,ADMIN")]
+[Authorize(Roles = "Usuario,Administrador")]
 public class OrdersController : ControllerBase
 {
     private readonly IOrderService _orderService;
-
-    public OrdersController(IOrderService orderService)
+    private readonly IUserLibraryGameService _userLibraryGame;
+    public OrdersController(IOrderService orderService, IUserLibraryGameService userLibraryGame)
     {
         _orderService = orderService;
+        _userLibraryGame = userLibraryGame;
     }
 
     [HttpPost("new-order")]
@@ -22,9 +24,9 @@ public class OrdersController : ControllerBase
         try
         {
             var userId = GetUserIdFromClaims();
-            var orderId = await _orderService.CreateOrderAsync(userId, request.Items);
-
-            return CreatedAtAction(nameof(GetOrder), new { id = orderId }, new { orderId });
+            var orderId = await _orderService.CreateOrderAsync(userId, request.Items, request);
+          
+            return CreatedAtAction(null, new { id = orderId }, orderId);
         }
         catch (InvalidOperationException ex)
         {
@@ -49,33 +51,6 @@ public class OrdersController : ControllerBase
         {
             return BadRequest(new { error = ex.Message });
         }
-    }
-
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetOrder(Guid id)
-    {
-        var order = await _orderService.GetOrderByIdAsync(id);
-
-        if (order == null)
-            return NotFound();
-
-        return Ok(OrderDto.FromOrder(order));
-    }
-
-    [HttpGet("my-orders")]
-    public async Task<IActionResult> GetMyOrders([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
-    {
-        var userId = GetUserIdFromClaims();
-        var orders = await _orderService.GetUserOrdersAsync(userId, page, pageSize);
-        var orderDtos = orders.Select(OrderDto.FromOrder).ToList();
-
-        return Ok(new
-        {
-            page,
-            pageSize,
-            total = orderDtos.Count,
-            data = orderDtos
-        });
     }
 
     private Guid GetUserIdFromClaims()

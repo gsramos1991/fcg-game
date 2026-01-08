@@ -4,6 +4,7 @@ using FCG.Game.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FCG.Game.Infrastructure.Migrations
 {
     [DbContext(typeof(GameDbContext))]
-    partial class GameDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260102192159_TableUserLibraryGame")]
+    partial class TableUserLibraryGame
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -60,8 +63,7 @@ namespace FCG.Game.Infrastructure.Migrations
 
                     b.Property<string>("Tags")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -138,7 +140,7 @@ namespace FCG.Game.Infrastructure.Migrations
                     b.Property<DateTime>("createdAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValue(new DateTime(2026, 1, 4, 1, 18, 7, 250, DateTimeKind.Utc).AddTicks(8715));
+                        .HasDefaultValue(new DateTime(2026, 1, 2, 19, 21, 59, 321, DateTimeKind.Utc).AddTicks(1527));
 
                     b.Property<Guid>("idGame")
                         .HasColumnType("uniqueidentifier");
@@ -147,9 +149,6 @@ namespace FCG.Game.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
-
-                    b.Property<Guid>("orderId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("userId")
                         .HasColumnType("uniqueidentifier");

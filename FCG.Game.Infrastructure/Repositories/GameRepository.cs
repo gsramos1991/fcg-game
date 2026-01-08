@@ -19,7 +19,16 @@ namespace FCG.Game.Infrastructure.Repositories
 
         public async Task<Domain.Entities.Game> GetGameByIdAsync(Guid id)
         {
-            return await _context.Games.FindAsync(id);
+            try
+            {
+                return await _context.Games.FindAsync(id);
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+            
         }
 
         public async Task<IEnumerable<Domain.Entities.Game>> GetAllGamesAsync()
